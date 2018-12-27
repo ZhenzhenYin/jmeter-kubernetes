@@ -45,6 +45,8 @@ slavedigits="${#slavesnum}"
 
 printf "Number of slaves is %s\n" "${slavesnum}"
 
+shuf() { awk 'BEGIN {srand(); OFMT="%.17f"} {print rand(), $0}' "$@" |
+	               sort -k1,1n | cut -d ' ' -f2-; }
 # Split and upload csv files
 
 for csvfilefull in "${jmx_dir}"/*.csv
@@ -58,8 +60,9 @@ for csvfilefull in "${jmx_dir}"/*.csv
   for j in $(seq -f "%0${slavedigits}g" 0 $((slavesnum-1)))
   do
     printf "Copy %s to %s on %s\n" "${csvfile}" "${csvfile}" "${slave_pods[j]}"
-    kubectl -n "$tenant" cp "${jmx_dir}/${csvfile}" "${slave_pods[j]}":/
-
+    cat "${jmx_dir}/${csvfile}" | shuf > "${jmx_dir}/${csvfile}".shuffled
+    kubectl -n "$tenant" cp "${jmx_dir}/${csvfile}.shuffled" "${slave_pods[j]}":/"${csvfile}"
+    
   done # for j in "${slave_pods[@]}"
 
 done # for csvfile in "${jmx_dir}/*.csv"
@@ -67,3 +70,5 @@ done # for csvfile in "${jmx_dir}/*.csv"
 ## Echo Starting Jmeter load test
 
 kubectl exec -ti -n "$tenant" "$master_pod" -- /bin/bash /load_test "/${jmx_dir}.jmx" $2
+
+kubectl cp "$tenant"/"$master_pod":"$2"/ "$2"/
