@@ -55,21 +55,15 @@ for csvfilefull in "${jmx_dir}"/*.csv
 
   printf "Processing %s file..\n" "$csvfile"
 
-  split --suffix-length="${slavedigits}" --additional-suffix=.csv -d --number="l/${slavesnum}" "${jmx_dir}/${csvfile}" "$jmx_dir"/
-
-  j=0
-  for i in $(seq -f "%0${slavedigits}g" 0 $((slavesnum-1)))
+  for j in $(seq -f "%0${slavedigits}g" 0 $((slavesnum-1)))
   do
-    printf "Copy %s to %s on %s\n" "${i}.csv" "${csvfile}" "${slave_pods[j]}"
-    kubectl -n "$tenant" cp "${jmx_dir}/${i}.csv" "${slave_pods[j]}":/
-    kubectl -n "$tenant" exec "${slave_pods[j]}" -- mv -v /"${i}.csv" /"${csvfile}"
-    rm -v "${jmx_dir}/${i}.csv"
+    printf "Copy %s to %s on %s\n" "${csvfile}" "${csvfile}" "${slave_pods[j]}"
+    kubectl -n "$tenant" cp "${jmx_dir}/${csvfile}" "${slave_pods[j]}":/
 
-    let j=j+1
-  done # for i in "${slave_pods[@]}"
+  done # for j in "${slave_pods[@]}"
 
 done # for csvfile in "${jmx_dir}/*.csv"
 
 ## Echo Starting Jmeter load test
 
-kubectl exec -ti -n "$tenant" "$master_pod" -- /jmeter/load_test "/${jmx_dir}.jmx"
+kubectl exec -ti -n "$tenant" "$master_pod" -- /bin/bash /load_test "/${jmx_dir}.jmx" $2
