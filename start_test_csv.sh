@@ -59,9 +59,9 @@ for csvfilefull in "${jmx_dir}"/*.csv
 
   for j in $(seq -f "%0${slavedigits}g" 0 $((slavesnum-1)))
   do
-    printf "Copy %s to %s on %s\n" "${csvfile}" "${csvfile}" "${slave_pods[j]}"
+    printf "Copy %s to %s on %s\n" "${csvfile}" "${csvfile}" "${slave_pods[$((10#$j))]}"
     cat "${jmx_dir}/${csvfile}" | shuf > "${jmx_dir}/${csvfile}".shuffled
-    kubectl -n "$tenant" cp "${jmx_dir}/${csvfile}.shuffled" "${slave_pods[j]}":/"${csvfile}"
+    kubectl -n "$tenant" cp "${jmx_dir}/${csvfile}.shuffled" "${slave_pods[$((10#$j))]}":/"${csvfile}"
     
   done # for j in "${slave_pods[@]}"
 

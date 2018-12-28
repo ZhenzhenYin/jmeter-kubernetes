@@ -8,6 +8,9 @@ OpenShift version > 3.5
 
 N.B.: this implementation was tested on Kubernetes 1.9, 1.10, and 1.11 and OpenShift 3.5 and 3.10 (minishift)
 
+make sure kubectl version > 1.8
+tested 1.8.5 has a bug of kubectl cp file renaming
+
 ## TL;DR
 
 ```bash
