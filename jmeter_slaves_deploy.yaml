@@ -5,7 +5,7 @@ metadata:
   labels:
     jmeter_mode: slave
 spec:
-  replicas: 16 
+  replicas: 24 
   selector:
     matchLabels:
       jmeter_mode: slave
@@ -14,6 +14,25 @@ spec:
       labels:
         jmeter_mode: slave
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: agentpool
+                operator: In
+                values:
+              #    - agent
+                  - sparkpool1
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: jmeter_mode
+                operator: In
+                values:
+                - slave
+            topologyKey: kubernetes.io/hostname                  
       containers:
       - name: jmslave
         image: kubernautslabs/jmeter_slave:latest
